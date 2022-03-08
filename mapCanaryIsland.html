@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Gráfico Islas Canarias</title>
+    <style>
+    div.tooltip {
+      position: absolute;
+      text-align: center;
+      width: 60px;
+      height: auto;
+      padding: 2px;
+      font: 12px sans-serif;
+      border: 0px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+    </style>
+  </head>
+  <body>
+    <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-array.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script src="https://d3js.org/queue.v1.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script>
+      // Definimos el tamaño del gráfico
+      var width = 1000, height = 500;
+      // Creamos el elemento SVG y le pasamos el tamaño
+      var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Definimos el rango de color
+      var color = d3.scaleLog()
+        .base(10)
+        .domain([1,20])
+        .range(["lightsteelblue", "darkblue"]);
+
+      // Se crea un div para la etiqueta flotante
+      var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      // objectmapa contiene el array de características
+      var objectmapa;
+
+      // Carga de datos de geometría e indicadores
+      // Se utiliza la función queue para realizar una carga asíncrona
+      // Se programa la función ready que se ejecuta cuando termina la carga de datos
+      // Se pueden cargar varios ficheros, en este caso se fusionaron los datos y la geometría
+      // en un único objeto geoJson
+      queue(1)
+        .defer(d3.json, "/data/grid250Canarias_poblacionBeta.geojson")
+        .await(ready);
+
+      // Función para cuando se cargan los datos de geometría e indicadores
+      function ready(error, json0) {
+        if (error) return console.error(error);
+
+        objectmapa = json0;
+        var scale  = 1;
+        // Función de proyección
+        var projection = d3.geoMercator()
+          // Elegidas las coordenadas para centrar el mapa
+          .center([10, 20])
+          // Podemos utilizar un factor de escala
+          .scale(scale);
+        projection.fitSize([width, height], objectmapa)
+
+        // Generamos los caminos pasando la proyección
+        var path = d3.geoPath()
+          .projection(projection)
+
+        var graticule = d3.geoGraticule();
+
+        svg.append("path")
+          .datum(graticule)
+          .attr("class", "graticule")
+          .attr("d", path);
+
+        // Agregamos un título personalizado al svg
+        svg.append("text")
+          .attr("transform", "translate(100,0)")
+          .attr("x", 175)
+          .attr("y", 50)
+          .attr("font-size", "20px")
+          .text("Cantidad de personas con nacionalidad extranjera por distrito en Canarias")
+
+        // Leyenda simple
+        svg.append("circle").attr("cx",450).attr("cy",490).attr("r", 6).style("fill", "lightsteelblue")
+        svg.append("circle").attr("cx",550).attr("cy",490).attr("r", 6).style("fill", "darkblue")
+        svg.append("text").attr("x", 460).attr("y", 490).text("Mínimo").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 560).attr("y", 490).text("Máximo").style("font-size", "15px").attr("alignment-baseline","middle")
+
+        // Agregamos los caminos con los datos del mapa
+        var u = svg
+          .selectAll('path')
+          .data(objectmapa.features);
+
+        // Se añaden los path a la etiqueta svg
+        // El atributo d de cada etiqueta path se asocia a los path creados con geoPath
+        // (var path = d3.geoPath(projection))
+        // El color de relleno se asocia con los valores del indicador correspondiente
+        u.enter()
+          .append('path')
+          .attr('d', path)
+          .attr("fill", function(d){
+            var value = d.properties.ULL_Nac_Extranjero;
+            return color(value);
+          })
+
+          .on("mouseover", function(d) {
+            div.transition()
+              .duration(200)
+              .style("opacity", 1);
+            div.html(d.properties.ULL_MUNICIPIO+ "<br/>" +
+              d.properties.ULL_Nac_Extranjero)
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+          })
+
+          .on("mouseout", function(d) {
+            div.transition()
+              .duration(500)
+              .style("opacity", 0);
+          })
+
+          .on("click", function(d){
+            console.log(d.properties.ULL_MUNICIPIO);
+            console.log(d.properties.ULL_Nac_Extranjero)
+          });
+      }
+    </script>
+  </body>
+</html>
