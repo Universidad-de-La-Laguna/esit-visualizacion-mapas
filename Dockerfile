@@ -24,7 +24,7 @@ EXPOSE 80
 #COPY mapCanaryIsland.html /var/www/html
 
 RUN rm -rf /var/www/html
-RUN ln -s /workspaces/mapas /var/www/html
+RUN ln -s /workspaces/esit-visualizacion-mapas /var/www/html
 
 COPY start.sh /bin
 RUN chmod a+x /bin/start.sh
