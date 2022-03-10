@@ -1,39 +1,35 @@
+# Repositorio base pare la Asignatura visualizacion. 
 
+Este repositorio sirve como base para la asignatrua de visualización.
 
-docker.io/ccesitull/ubuntu-visualizacion-mapas
+Hace uso de las extensiones de Visual Studio Code Remote-Container
+
+## Referencia
+
+https://code.visualstudio.com/docs/remote/containers
+
 
 ## Pasos sin usar Visual Studio Code
 
-Para compilar el lanzo 
 
+Para el lanzo 
 ``` 
+docker run -ti --rm -p 8080:80 --name mapas-visualizacion docker.io/ccesitull/ubuntu-visualizacion-mapas
+``` 
+
+Para compilar el Dockerfile
+```
 docker build --no-cache . -t docker.io/ccesitull/ubuntu-visualizacion-mapas
-docker run -ti --rm -p 8080:80 --name mapas-visualizacion docker.io/ccesitull/ubuntu-visualizacion-mapas
+```
 
-``` 
-
-
-
-RUN rm -Rf /etc/nginx/nginx.conf
-ADD  conf/nginx.conf /etc/nginx/nginx.conf
-
-docker run -ti --rm -p 8080:80 --name mapas-visualizacion docker.io/ccesitull/ubuntu-visualizacion-mapas
-
-
-
-## 
-Remote-Container: Open Folder in Container
- Remote-Containers: Rebuild Container
- 
-reload
 
 ## Errores conocidos
+A veces hay que borrar la cache del Visual Studio Code
 
+```
 sudo rm -Rf /tmp/vsch/
+```
 
-
-## Referencia
-https://code.visualstudio.com/docs/remote/containers
 
 
 
